@@ -485,6 +485,66 @@ Use SSH options for redis transport through SSH Tunnel::
     ssh_remote_port: 6379
 
 
+
+Init.d Ubuntu/Debian daemon Start Stop script with redis, configuration file, pid and daemon
+********************************************************************************************
+
+Add 
+
+    # /etc/init.d/beaver
+    #!/bin/sh
+
+    ### BEGIN INIT INFO
+    # Provides:             beaver
+    # Required-Start:        $all
+    # Required-Stop:         $all
+    # Default-Start:         2 3 4 5
+    # Default-Stop:          0 1 6
+    # Short-Description:    starts and stops beaver daemon
+    # Description:          starts and stops beaver daemon
+    ### END INIT INFO
+
+    PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+    DAEMON=/usr/local/bin/beaver
+    NAME=beaver
+    DESC=beaver
+    SERVER="$2"
+
+    test -x $DAEMON || exit 0
+
+    start () {
+        /usr/local/bin/beaver -c /etc/beaver/conf -t redis --pid /var/run/beaver.pid -D
+    }
+
+    stop () {
+        kill `cat /var/run/beaver.pid`
+    }
+
+    case "$1" in
+        start)
+                echo "Starting $DESC"
+                start
+                ;;
+        stop)
+                echo "Stopping $DESC"
+                stop
+                ;;
+        restart)
+                echo "Restarting $DESC"
+                stop
+                sleep 1
+                start
+                ;;
+        *)
+                N=/etc/init.d/$NAME
+                echo "Usage: $N {start|stop|restart} [particular_server_to_restart]" >&2
+                exit 1
+                ;;
+    esac
+
+    exit 0
+
+
 Environment Import Support
 **************************
 
